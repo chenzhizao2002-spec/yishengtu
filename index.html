@@ -1,0 +1,855 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI图片工具箱 - AI提示词生成器 | 图片反推工具</title>
+    <meta name="description" content="免费的AI图片工具箱，提供图片反推提示词、提示词生成图片功能。支持多种AI模型，简单易用。">
+    <meta name="keywords" content="AI图片工具, 提示词生成, 图片反推, Midjourney提示词, Stable Diffusion提示词, DALL-E">
+    <meta name="author" content="AIImageTools">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://你的域名.com/">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #1a1a2e;
+            color: #fff;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        header {
+            background: #16213e;
+            padding: 20px;
+            text-align: center;
+            border-bottom: 2px solid #0f3460;
+        }
+        h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+        .subtitle {
+            color: #888;
+            font-size: 14px;
+        }
+        .api-section {
+            background: #16213e;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+        .api-section h2 {
+            font-size: 18px;
+            margin-bottom: 15px;
+            color: #e94560;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #aaa;
+            font-size: 14px;
+        }
+        input[type="text"], input[type="password"], textarea, select {
+            width: 100%;
+            padding: 12px;
+            background: #0f3460;
+            border: 1px solid #333;
+            border-radius: 8px;
+            color: #fff;
+            font-size: 14px;
+        }
+        textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+        .btn {
+            background: linear-gradient(135deg, #e94560, #0f3460);
+            color: #fff;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+        .btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 20px rgba(233, 69, 96, 0.4);
+        }
+        .btn:disabled {
+            background: #555;
+            cursor: not-allowed;
+        }
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+        .tab-btn {
+            background: #16213e;
+            border: 1px solid #333;
+            color: #888;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .tab-btn.active {
+            background: #e94560;
+            color: #fff;
+            border-color: #e94560;
+        }
+        .tab-content {
+            display: none;
+            background: #16213e;
+            padding: 20px;
+            border-radius: 10px;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        .upload-area {
+            border: 2px dashed #333;
+            border-radius: 10px;
+            padding: 40px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .upload-area:hover {
+            border-color: #e94560;
+            background: rgba(233, 69, 96, 0.1);
+        }
+        .upload-area img {
+            max-width: 100%;
+            max-height: 300px;
+            border-radius: 8px;
+            margin-top: 10px;
+        }
+        .result-area {
+            background: #0f3460;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+            min-height: 100px;
+        }
+        .result-area pre {
+            white-space: pre-wrap;
+            word-break: break-all;
+            font-size: 13px;
+            line-height: 1.6;
+        }
+        .preview-img {
+            max-width: 100%;
+            max-height: 400px;
+            border-radius: 8px;
+            margin-top: 10px;
+        }
+        .status {
+            color: #4ec9b0;
+            margin-top: 10px;
+            font-size: 14px;
+        }
+        .error {
+            color: #e94560;
+        }
+        .credit-info {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #0f3460;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-size: 14px;
+        }
+        .credit-info span {
+            color: #4ec9b0;
+            font-weight: bold;
+        }
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: #333;
+            border-radius: 3px;
+            margin-top: 10px;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #e94560, #4ec9b0);
+            width: 0%;
+            transition: width 0.3s;
+        }
+        .packages {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        .package {
+            background: #0f3460;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .package:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+        }
+        .package-name {
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        .package-price {
+            font-size: 24px;
+            color: #4ec9b0;
+        }
+        .package-credits {
+            font-size: 14px;
+            color: #888;
+            margin-top: 5px;
+        }
+        footer {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+            font-size: 12px;
+            margin-top: 40px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>🎨 AI图片工具箱</h1>
+        <p class="subtitle">图片反推 · 提示词生图 · 动作模仿</p>
+    </header>
+
+    <div class="credit-info">
+        可用积分: <span id="credits">0</span>
+    </div>
+
+    <div class="container">
+        <!-- API配置 -->
+        <div class="api-section">
+            <h2>⚙️ API配置</h2>
+            <div style="background:#2a1a1a;padding:10px;border-radius:5px;margin-bottom:15px;color:#e94560;font-size:13px">
+                ⚠️ 注意：网页版存在CORS跨域限制，部分API可能无法调用。<br>
+                如遇"Failed to fetch"错误，推荐使用 <strong>桌面版应用</strong>：
+                <code style="background:#333;padding:2px 6px;border-radius:3px">D:\Projects\AIImageTools\src\AIImageTools\AIImageTools\bin\Release\net8.0-windows\AIImageTools.exe</code>
+            </div>
+            <div class="form-group">
+                <label>AI服务商</label>
+                <select id="provider" onchange="onProviderChange()">
+                    <option value="siliconflow">🔥 硅基流动 (推荐，支持CORS)</option>
+                    <option value="openai">OpenAI (GPT-4o)</option>
+                    <option value="stepfun">阶跃星辰 (Step-2)</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>API Key</label>
+                <input type="password" id="apiKey" placeholder="输入你的API Key">
+            </div>
+            <div class="form-group" id="baseUrlGroup" style="display:none">
+                <label>Base URL (可选)</label>
+                <input type="text" id="baseUrl" placeholder="留空使用默认">
+            </div>
+            <button class="btn" onclick="saveConfig()">保存配置</button>
+            <button class="btn" onclick="testConnection()" style="margin-left:10px">测试连接</button>
+        </div>
+
+        <!-- Tab导航 -->
+        <div class="tabs">
+            <button class="tab-btn active" onclick="switchTab('image2prompt')">📷 图片反推</button>
+            <button class="tab-btn" onclick="switchTab('prompt2image')">🎨 提示词生图</button>
+            <button class="tab-btn" onclick="switchTab('motion')">🎬 动作模仿</button>
+            <button class="tab-btn" onclick="switchTab('recharge')">💰 充值积分</button>
+        </div>
+
+        <!-- Tab1: 图片反推 -->
+        <div id="image2prompt" class="tab-content active">
+            <h2>📷 图片反推提示词</h2>
+            <p style="color:#888;margin-bottom:15px">上传图片，AI分析生成Midjourney/Stable Diffusion风格提示词</p>
+
+            <div class="upload-area" onclick="document.getElementById('imgUpload1').click()">
+                <input type="file" id="imgUpload1" accept="image/*" style="display:none" onchange="previewImage(this, 'imgPreview1')">
+                <div id="uploadTip1">点击上传图片或拖拽到这里</div>
+                <img id="imgPreview1" style="display:none">
+            </div>
+
+            <button class="btn" onclick="analyzeImage()" style="margin-top:15px">🔍 开始分析 (消耗1积分)</button>
+
+            <div class="progress-bar"><div class="progress-fill" id="progress1"></div></div>
+            <div class="status" id="status1"></div>
+
+            <div class="result-area" id="result1" style="display:none">
+                <h3 style="margin-bottom:10px">🎯 生成结果</h3>
+                <pre id="promptResult"></pre>
+                <button class="btn" onclick="copyResult()" style="margin-top:10px">📋 复制</button>
+            </div>
+        </div>
+
+        <!-- Tab2: 提示词生图 -->
+        <div id="prompt2image" class="tab-content">
+            <h2>🎨 提示词生图</h2>
+            <p style="color:#888;margin-bottom:15px">输入提示词，DALL-E/SD生成图片</p>
+
+            <div class="form-group">
+                <label>图片描述 (英文效果更好)</label>
+                <textarea id="imgPrompt" placeholder="A beautiful sunset over the ocean, cinematic lighting, highly detailed, 8k resolution..."></textarea>
+            </div>
+
+            <div class="form-group">
+                <label>生图模型</label>
+                <select id="imgModel">
+                    <option value="dall-e-3">DALL-E 3 (OpenAI)</option>
+                    <option value="stable-diffusion">Stable Diffusion XL</option>
+                    <option value="flux">FLUX.1 (最快)</option>
+                </select>
+            </div>
+
+            <button class="btn" onclick="generateImage()" style="margin-top:10px">🎨 生成图片 (消耗5积分)</button>
+
+            <div class="progress-bar"><div class="progress-fill" id="progress2"></div></div>
+            <div class="status" id="status2"></div>
+
+            <div class="result-area" id="result2" style="display:none">
+                <img id="genImg" class="preview-img">
+                <div style="margin-top:15px">
+                    <button class="btn" onclick="downloadImage()">💾 下载</button>
+                    <button class="btn" onclick="openInFolder()" style="margin-left:10px">📂 打开文件夹</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab3: 动作模仿 -->
+        <div id="motion" class="tab-content">
+            <h2>🎬 动作模仿视频</h2>
+            <p style="color:#888;margin-bottom:15px">导入参考图片(姿势) + 参考视频(动作) 生成模仿视频</p>
+
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+                <div>
+                    <label>参考图片 (目标姿势)</label>
+                    <div class="upload-area" onclick="document.getElementById('refImg').click()">
+                        <input type="file" id="refImg" accept="image/*" style="display:none" onchange="previewImage(this, 'refImgPreview')">
+                        <div id="uploadTipRef">点击上传参考图片</div>
+                        <img id="refImgPreview" style="display:none">
+                    </div>
+                </div>
+                <div>
+                    <label>参考视频 (动作来源)</label>
+                    <div class="upload-area" onclick="document.getElementById('refVideo').click()">
+                        <input type="file" id="refVideo" accept="video/*" style="display:none" onchange="previewVideo(this)">
+                        <div id="uploadTipVideo">点击上传参考视频 (MP4/MOV)</div>
+                        <video id="videoPreview" style="display:none;max-width:100%;border-radius:8px" controls></video>
+                    </div>
+                </div>
+            </div>
+
+            <button class="btn" onclick="analyzePose()" style="margin-top:15px">🔍 分析姿态 (消耗2积分)</button>
+            <button class="btn" onclick="generateMotion()" style="margin-left:10px;margin-top:15px">🎬 生成视频 (消耗20积分)</button>
+
+            <div class="progress-bar"><div class="progress-fill" id="progress3"></div></div>
+            <div class="status" id="status3"></div>
+
+            <div class="result-area" id="result3" style="display:none">
+                <h3 style="margin-bottom:10px">🎯 姿态分析</h3>
+                <pre id="poseResult"></pre>
+                <video id="resultVideo" style="display:none;max-width:100%;margin-top:15px" controls></video>
+                <div style="margin-top:15px">
+                    <button class="btn" onclick="openResultVideo()">▶️ 播放</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab4: 充值 -->
+        <div id="recharge" class="tab-content">
+            <h2>💰 充值积分</h2>
+            <p style="color:#888;margin-bottom:15px">积分用于AI功能消耗，永久有效</p>
+
+            <div class="packages">
+                <div class="package" onclick="recharge(10, 100)">
+                    <div class="package-name">入门包</div>
+                    <div class="package-price">¥10</div>
+                    <div class="package-credits">100积分</div>
+                </div>
+                <div class="package" onclick="recharge(30, 350)">
+                    <div class="package-name">基础包</div>
+                    <div class="package-price">¥30</div>
+                    <div class="package-credits">350积分 (赠50)</div>
+                </div>
+                <div class="package" onclick="recharge(50, 600)">
+                    <div class="package-name">高级包</div>
+                    <div class="package-price">¥50</div>
+                    <div class="package-credits">600积分 (赠100)</div>
+                </div>
+                <div class="package" onclick="recharge(100, 1300)">
+                    <div class="package-name">专业包</div>
+                    <div class="package-price">¥100</div>
+                    <div class="package-credits">1300积分 (赠200)</div>
+                </div>
+            </div>
+
+            <div style="margin-top:30px">
+                <h3>📊 积分记录</h3>
+                <div id="usageHistory" style="margin-top:10px;color:#888">暂无记录</div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>AI图片工具箱 v1.0 | 仅供学习研究使用</p>
+    </footer>
+
+    <script>
+        // 配置
+        let config = {
+            provider: 'openai',
+            apiKey: '',
+            baseUrl: ''
+        };
+        let credits = parseInt(localStorage.getItem('credits') || '0');
+        let currentImage = null;
+        let currentPrompt = '';
+
+        // 页面加载
+        document.getElementById('credits').textContent = credits;
+
+        // 切换Tab
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(div => div.classList.remove('active'));
+            document.querySelector(`[onclick="switchTab('${tabId}')"]`).classList.add('active');
+            document.getElementById(tabId).classList.add('active');
+        }
+
+        // 保存配置
+        function saveConfig() {
+            config.provider = document.getElementById('provider').value;
+            config.apiKey = document.getElementById('apiKey').value;
+            config.baseUrl = document.getElementById('baseUrl').value;
+            localStorage.setItem('aiConfig', JSON.stringify(config));
+            showStatus('status1', '✅ 配置已保存', false);
+        }
+
+        // 服务商切换
+        function onProviderChange() {
+            const provider = document.getElementById('provider').value;
+            const baseUrlInput = document.getElementById('baseUrl');
+            const baseUrlGroup = document.getElementById('baseUrlGroup');
+
+            // 硅基流动使用固定URL，不显示自定义URL输入
+            if (provider === 'siliconflow') {
+                baseUrlInput.value = 'https://api.siliconflow.cn/v1';
+                baseUrlGroup.style.display = 'none';
+            } else if (provider === 'stepfun') {
+                baseUrlInput.value = 'https://api.stepfun.com/v1';
+                baseUrlGroup.style.display = 'block';
+            } else {
+                baseUrlInput.value = '';
+                baseUrlGroup.style.display = 'block';
+            }
+        }
+
+        // 加载配置
+        function loadConfig() {
+            const saved = localStorage.getItem('aiConfig');
+            if (saved) {
+                config = JSON.parse(saved);
+                document.getElementById('provider').value = config.provider || 'siliconflow';
+                document.getElementById('apiKey').value = config.apiKey || '';
+                document.getElementById('baseUrl').value = config.baseUrl || '';
+                onProviderChange(); // 设置URL显示
+            }
+        }
+        loadConfig();
+        onProviderChange(); // 默认设置
+
+        // 获取API端点
+        function getEndpoint() {
+            if (config.baseUrl) return config.baseUrl;
+            switch (config.provider) {
+                case 'openai': return 'https://api.openai.com/v1';
+                case 'siliconflow': return 'https://api.siliconflow.cn/v1';
+                case 'stepfun': return 'https://api.stepfun.com/v1';
+                default: return 'https://api.siliconflow.cn/v1';
+            }
+        }
+
+        // 测试连接
+        async function testConnection() {
+            if (!config.apiKey) {
+                alert('请先输入API Key');
+                return;
+            }
+            showStatus('status1', '🔄 测试连接中...', false);
+
+            try {
+                const endpoint = getEndpoint() + '/models';
+                const response = await fetch(endpoint, {
+                    method: 'GET',
+                    headers: { 'Authorization': `Bearer ${config.apiKey}` }
+                });
+                if (response.ok) {
+                    showStatus('status1', '✅ 连接成功!', false);
+                } else {
+                    const errText = await response.text().catch(() => '');
+                    let errMsg = '连接失败';
+                    if (response.status === 401) errMsg = 'API Key无效';
+                    else if (response.status === 403) errMsg = '无权限，可能是CORS或网络问题';
+                    else if (response.status === 404) errMsg = '端点不存在';
+                    showStatus('status1', '❌ ' + errMsg + ' (状态码:' + response.status + ')', true);
+                }
+            } catch (e) {
+                let errMsg = '连接失败';
+                if (e.message.includes('CORS') || e.message.includes('fetch')) {
+                    errMsg = 'CORS错误: 浏览器被阻止。建议使用桌面版，或换用支持CORS的API如硅基流动。';
+                } else if (e.message.includes('NetworkError')) {
+                    errMsg = '网络错误: 请检查网络连接';
+                } else if (e.message.includes('Failed to fetch')) {
+                    errMsg = '请求被阻止 (CORS/网络)。推荐使用桌面版应用。';
+                }
+                showStatus('status1', '❌ ' + errMsg, true);
+            }
+        }
+
+        // 获取API端点
+        function getEndpoint() {
+            if (config.baseUrl) return config.baseUrl;
+            switch (config.provider) {
+                case 'openai': return 'https://api.openai.com/v1';
+                case 'siliconflow': return 'https://api.siliconflow.cn/v1';
+                case 'stepfun': return 'https://api.stepfun.com/v1';
+                default: return 'https://api.openai.com/v1';
+            }
+        }
+
+        // 图片预览
+        function previewImage(input, previewId) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById(previewId).src = e.target.result;
+                    document.getElementById(previewId).style.display = 'block';
+                    document.querySelector(`[id^="uploadTip"][id$="${previewId.split('Preview')[0].replace('img', '').replace('ref', 'Ref')}"]`)?.style?.setProperty('display', 'none');
+                    // 找到对应的 uploadTip
+                    const tipId = previewId.replace('Preview', '').replace('img', '').replace('Ref', '');
+                    const tip = document.getElementById(previewId.replace('Preview', '').replace(/^/, 'uploadTip').replace('img', '').replace('Ref', ''));
+                    if (tip) tip.style.display = 'none';
+                };
+                reader.readAsDataURL(input.files[0]);
+                currentImage = input.files[0];
+            }
+        }
+
+        // 显示状态
+        function showStatus(id, msg, isError) {
+            const el = document.getElementById(id);
+            el.textContent = msg;
+            el.className = isError ? 'error' : 'status';
+            setTimeout(() => { el.textContent = ''; }, 5000);
+        }
+
+        // 扣除积分
+        function deductCredits(amount) {
+            if (credits >= amount) {
+                credits -= amount;
+                localStorage.setItem('credits', credits);
+                document.getElementById('credits').textContent = credits;
+                return true;
+            }
+            return false;
+        }
+
+        // 图片反推
+        async function analyzeImage() {
+            if (!config.apiKey) {
+                alert('请先配置API Key');
+                return;
+            }
+            if (!currentImage) {
+                alert('请先上传图片');
+                return;
+            }
+            if (!deductCredits(1)) {
+                alert('积分不足，请先充值');
+                return;
+            }
+
+            showStatus('status1', '🔄 正在分析图片...', false);
+            document.getElementById('progress1').style.width = '30%';
+
+            try {
+                // 转换图片为base64
+                const base64 = await fileToBase64(currentImage);
+                const imageData = `data:image/jpeg;base64,${base64.split(',')[1]}`;
+
+                const endpoint = getEndpoint() + '/chat/completions';
+                const model = getVisionModel();
+
+                console.log('调用API:', endpoint, '模型:', model);
+
+                const response = await fetch(endpoint, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${config.apiKey}`
+                    },
+                    body: JSON.stringify({
+                        model: model,
+                        messages: [{
+                            role: 'user',
+                            content: [
+                                { type: 'image_url', image_url: { url: imageData } },
+                                { type: 'text', text: '分析这张图片，生成Midjourney/Stable Diffusion风格的英文提示词，包含：1)画面主体和场景 2)光线色彩氛围 3)构图视角风格 4)艺术细节。输出3-5个变体选项。' }
+                            ]
+                        }]
+                    })
+                });
+
+                document.getElementById('progress1').style.width = '80%';
+
+                if (response.ok) {
+                    const data = await response.json();
+                    const result = data.choices[0].message.content;
+                    document.getElementById('promptResult').textContent = result;
+                    document.getElementById('result1').style.display = 'block';
+                    showStatus('status1', '✅ 分析完成!', false);
+                } else {
+                    const errText = await response.text().catch(() => '');
+                    let errMsg = 'API错误';
+                    if (response.status === 401) errMsg = 'API Key无效';
+                    else if (response.status === 403) errMsg = 'CORS/跨域错误 - 请使用桌面版';
+                    else if (response.status === 400) errMsg = '请求格式错误: ' + errText.substring(0, 100);
+                    else errMsg = '错误' + response.status + ': ' + errText.substring(0, 100);
+                    showStatus('status1', '❌ ' + errMsg, true);
+                }
+            } catch (e) {
+                console.error('请求错误:', e);
+                let errMsg = e.message;
+                if (errMsg.includes('Failed to fetch') || errMsg.includes('CORS') || errMsg.includes('NetworkError')) {
+                    errMsg = 'CORS/网络错误 - 浏览器被阻止。请使用桌面版应用，或换用硅基流动API';
+                }
+                showStatus('status1', '❌ ' + errMsg, true);
+            }
+            document.getElementById('progress1').style.width = '100%';
+            setTimeout(() => document.getElementById('progress1').style.width = '0%', 1000);
+        }
+
+        // 获取视觉模型 - 硅基流动用 InternVL2，阶跃用 step-1v
+        function getVisionModel() {
+            switch (config.provider) {
+                case 'openai': return 'gpt-4o';
+                case 'siliconflow': return 'OpenGVLab/InternVL2-26B';
+                case 'stepfun': return 'step-1v';
+                default: return 'OpenGVLab/InternVL2-26B';
+            }
+        }
+
+        // 获取生图模型
+        function getImageModel() {
+            switch (config.provider) {
+                case 'openai': return 'dall-e-3';
+                case 'siliconflow': return 'stabilityai/stable-diffusion-3-medium';
+                case 'stepfun': return 'step-1x';
+                default: return 'stabilityai/stable-diffusion-3-medium';
+            }
+        }
+
+        // 文件转Base64
+        function fileToBase64(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = reject;
+            });
+        }
+
+        // 复制结果
+        function copyResult() {
+            const text = document.getElementById('promptResult').textContent;
+            navigator.clipboard.writeText(text);
+            showStatus('status1', '✅ 已复制到剪贴板', false);
+        }
+
+        // 生成图片
+        async function generateImage() {
+            if (!config.apiKey) {
+                alert('请先配置API Key');
+                return;
+            }
+            const prompt = document.getElementById('imgPrompt').value;
+            if (!prompt) {
+                alert('请输入图片描述');
+                return;
+            }
+            if (!deductCredits(5)) {
+                alert('积分不足，请先充值');
+                return;
+            }
+
+            showStatus('status2', '🔄 正在生成图片...', false);
+            document.getElementById('progress2').style.width = '30%';
+
+            try {
+                // 硅基流动支持图像生成
+                const endpoint = getEndpoint() + '/images/generations';
+                const model = getImageModel();
+
+                console.log('生成图片API:', endpoint, '模型:', model);
+
+                const requestBody = {
+                    model: model,
+                    prompt: prompt,
+                    n: 1,
+                    size: '1024x1024'
+                };
+
+                // 硅基流动生图可能用不同的请求格式
+                if (config.provider === 'siliconflow') {
+                    requestBody.model = 'stabilityai/stable-diffusion-3-medium';
+                }
+
+                const response = await fetch(endpoint, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${config.apiKey}`
+                    },
+                    body: JSON.stringify(requestBody)
+                });
+
+                document.getElementById('progress2').style.width = '70%';
+
+                if (response.ok) {
+                    const data = await response.json();
+                    const imageUrl = data.data?.[0]?.url || data.data?.[0]?.b64_json;
+                    if (imageUrl) {
+                        document.getElementById('genImg').src = imageUrl.startsWith('data:') ? imageUrl : imageUrl;
+                        document.getElementById('result2').style.display = 'block';
+                        currentPrompt = prompt;
+                        showStatus('status2', '✅ 生成完成!', false);
+                    }
+                } else {
+                    const err = await response.text();
+                    showStatus('status2', '❌ 生成失败: ' + err, true);
+                }
+            } catch (e) {
+                showStatus('status2', '❌ 错误: ' + e.message, true);
+            }
+            document.getElementById('progress2').style.width = '100%';
+            setTimeout(() => document.getElementById('progress2').style.width = '0%', 1000);
+        }
+
+        // 下载图片
+        function downloadImage() {
+            const img = document.getElementById('genImg');
+            if (img.src) {
+                const a = document.createElement('a');
+                a.href = img.src;
+                a.download = `ai_image_${Date.now()}.png`;
+                a.click();
+            }
+        }
+
+        // 预览视频
+        function previewVideo(input) {
+            if (input.files && input.files[0]) {
+                const url = URL.createObjectURL(input.files[0]);
+                document.getElementById('videoPreview').src = url;
+                document.getElementById('videoPreview').style.display = 'block';
+                document.getElementById('uploadTipVideo').style.display = 'none';
+            }
+        }
+
+        // 分析姿态
+        async function analyzePose() {
+            if (!config.apiKey || !currentImage) {
+                alert('请配置API Key并上传参考图片');
+                return;
+            }
+            if (!deductCredits(2)) {
+                alert('积分不足');
+                return;
+            }
+
+            showStatus('status3', '🔄 分析姿态中...', false);
+            document.getElementById('progress3').style.width = '50%';
+
+            try {
+                const base64 = await fileToBase64(currentImage);
+                const imageData = `data:image/jpeg;base64,${base64.split(',')[1]}`;
+
+                const response = await fetch(getEndpoint() + '/chat/completions', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${config.apiKey}`
+                    },
+                    body: JSON.stringify({
+                        model: getVisionModel(),
+                        messages: [{
+                            role: 'user',
+                            content: [
+                                { type: 'image_url', image_url: { url: imageData } },
+                                { type: 'text', text: '分析图片中人物姿态：1)整体姿势 2)四肢角度 3)重心分布 4)动作特征。用中文详细描述。' }
+                            ]
+                        }]
+                    })
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    document.getElementById('poseResult').textContent = data.choices[0].message.content;
+                    document.getElementById('result3').style.display = 'block';
+                    showStatus('status3', '✅ 姿态分析完成', false);
+                }
+            } catch (e) {
+                showStatus('status3', '❌ 错误: ' + e.message, true);
+            }
+            document.getElementById('progress3').style.width = '100%';
+            setTimeout(() => document.getElementById('progress3').style.width = '0%', 1000);
+        }
+
+        // 生成动作视频 (需要视频生成API支持)
+        async function generateMotion() {
+            if (!config.apiKey) {
+                alert('请先配置API Key');
+                return;
+            }
+            // 注意：动作视频生成需要视频生成API，这里用图片生成作为演示
+            alert('视频生成功能需要Replicate或其他视频生成API支持\n请在设置中配置相应API Key');
+        }
+
+        // 充值
+        function recharge(amount, creditAmount) {
+            // 模拟充值（实际需要支付接口）
+            if (confirm(`确认充值 ¥${amount} = ${creditAmount}积分？\n\n(模拟支付，实际不会扣款)`)) {
+                credits += creditAmount;
+                localStorage.setItem('credits', credits);
+                document.getElementById('credits').textContent = credits;
+                alert(`充值成功！获得 ${creditAmount} 积分`);
+            }
+        }
+
+        // 初始化积分显示
+        document.getElementById('credits').textContent = credits;
+    </script>
+</body>
+</html>
